@@ -9,16 +9,8 @@ type CreateUserData = {
   name: string;
   email: string;
   password: string;
-  role:
-    | "DIRECTOR"
-    | "PRINCIPAL"
-    | "TEACHER"
-    | "ACCOUNTANT"
-    | "TRANSPORT_HEAD"
-    | "HOSTEL_WARDEN"
-    | "STAFF";
-
-  organizationId: string;
+  role: string;
+  organizationId?: string;
   institutionId?: string;
 };
 
@@ -53,15 +45,14 @@ export async function loginUser(
     throw new Error("User not found");
   }
 
-  console.log("PLAIN PASSWORD:", password);
-  console.log("HASHED PASSWORD:", user.password);
+  
 
   const isMatch = await comparePassword(
     password,
     user.password
   );
 
-  console.log("COMPARE RESULT:", isMatch);
+ 
 
   if (!isMatch) {
     throw new Error("Password incorrect");

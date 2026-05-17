@@ -14,7 +14,7 @@ export async function comparePassword(
 
 const JWT_SECRET = process.env.JWT_SECRET || "mysecretkey123";
 
-console.log("JWT SECRET:", JWT_SECRET);
+
 
 export function generateToken(payload: {
   userId: string;
