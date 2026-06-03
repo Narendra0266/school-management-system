@@ -1,29 +1,30 @@
-import { NextRequest, NextResponse } from "next/server";
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
 
-import { authorize } from "@/lib/authorize";
+import {
+  verifyAuth,
+} from "@/lib/authGuard";
 
-export async function GET(req: NextRequest) {
+import {
+  UserRole,
+} from "@prisma/client";
+
+export async function GET(
+  req: NextRequest
+) {
+
   try {
-    const authHeader =
-      req.headers.get("authorization");
 
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    const token =
-      authHeader.split(" ")[1];
-
-    const user = authorize(
-      token,
-      "CREATE_USER"
-    );
+    const user =
+      verifyAuth(req, [
+        UserRole.DIRECTOR,
+      ]);
 
     return NextResponse.json({
-      message: "Access granted",
+      message:
+        "Protected route working",
       user,
     });
 
@@ -31,11 +32,14 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(
       {
-        error: error.message,
+        error:
+          error.message ||
+          "Unauthorized",
       },
       {
         status:
-          error.message === "Forbidden"
+          error.message ===
+          "Forbidden"
             ? 403
             : 401,
       }

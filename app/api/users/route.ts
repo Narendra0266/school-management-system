@@ -4,7 +4,6 @@ import { createUser } from "@/services/user.service";
 
 import { createUserSchema }
 from "@/validators/user.validator";
-
 export async function POST(req: Request) {
   try {
 

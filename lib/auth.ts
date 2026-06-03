@@ -12,8 +12,11 @@ export async function comparePassword(
   return bcrypt.compare(password, hashedPassword);
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || "mysecretkey123";
+const JWT_SECRET = process.env.JWT_SECRET!;
 
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET missing");
+}
 
 
 export function generateToken(payload: {

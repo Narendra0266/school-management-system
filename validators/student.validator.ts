@@ -15,23 +15,31 @@ export const createStudentSchema =
 
     phone:
       z.string()
+       .min(10)
+       .max(15)
        .optional(),
 
     gender:
-      z.string(),
+      z.enum([
+        "MALE",
+        "FEMALE",
+        "OTHER",
+      ]),
 
     dateOfBirth:
-      z.string(),
+      z.coerce.date(),
 
     address:
       z.string()
        .optional(),
 
     admissionNo:
-      z.string(),
+      z.string()
+       .min(1),
 
     institutionId:
-      z.string(),
+      z.string()
+       .min(1),
   });
 
 export type CreateStudentInput =

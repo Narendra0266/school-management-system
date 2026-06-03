@@ -1,20 +1,81 @@
-import { NextRequest, NextResponse } from "next/server";
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
 
-export default function proxy(
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET =
+  process.env.JWT_SECRET!;
+
+const publicRoutes = [
+  "/api/login",
+  "/api/users",
+  "/api/organizations",
+];
+
+export function proxy(
   req: NextRequest
 ) {
-  const authHeader = req.headers.get("authorization");
 
-  if (!authHeader) {
+  const path =
+    req.nextUrl.pathname;
+
+  if (
+    publicRoutes.includes(path)
+  ) {
+    return NextResponse.next();
+  }
+
+  const authHeader =
+    req.headers.get(
+      "authorization"
+    );
+
+  if (
+    !authHeader ||
+    !authHeader.startsWith(
+      "Bearer "
+    )
+  ) {
     return NextResponse.json(
-      { error: "Unauthorized" },
-      { status: 401 }
+      {
+        error: "Unauthorized",
+      },
+      {
+        status: 401,
+      }
     );
   }
 
-  return NextResponse.next();
+  const token =
+    authHeader.replace(
+      "Bearer ",
+      ""
+    );
+
+  try {
+
+    jwt.verify(
+      token,
+      JWT_SECRET
+    );
+
+    return NextResponse.next();
+
+  } catch {
+
+    return NextResponse.json(
+      {
+        error: "Invalid token",
+      },
+      {
+        status: 401,
+      }
+    );
+  }
 }
 
 export const config = {
-  matcher: ["/api/protected/:path*"],
+  matcher: ["/api/:path*"],
 };

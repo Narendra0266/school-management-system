@@ -1,60 +1,78 @@
-import { NextRequest } from "next/server";
-import * as jwt from "jsonwebtoken";
-import { hasPermission } from "./permissions";
+import { NextRequest }
+from "next/server";
 
-const JWT_SECRET = process.env.JWT_SECRET;
+import jwt from "jsonwebtoken";
+
+import type {
+  UserRole,
+} from "@prisma/client";
+
+const JWT_SECRET =
+  process.env.JWT_SECRET!;
 
 if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET missing");
+  throw new Error(
+    "JWT_SECRET missing"
+  );
 }
 
-type TokenPayload = {
+type JwtPayload = {
   userId: string;
-  role: keyof typeof import("./permissions").permissions;
+  role: UserRole;
 };
 
-export function authorize(
+export function verifyAuth(
   req: NextRequest,
-  permission?: string
+  allowedRoles: UserRole[] = []
 ) {
+
   const authHeader =
-    req.headers.get("authorization");
+    req.headers.get(
+      "authorization"
+    );
 
-  if (!authHeader) {
-    throw new Error("Unauthorized");
+  if (
+    !authHeader ||
+    !authHeader.startsWith(
+      "Bearer "
+    )
+  ) {
+    throw new Error(
+      "Unauthorized"
+    );
   }
 
-  const token = authHeader.split(" ")[1];
-
-  if (!token) {
-    throw new Error("Token missing");
-  }
+  const token =
+    authHeader.replace(
+      "Bearer ",
+      ""
+    );
 
   try {
+
     const decoded =
-  jwt.verify(
-    token,
-    JWT_SECRET as string
-  ) as TokenPayload;
+      jwt.verify(
+        token,
+        JWT_SECRET
+      ) as JwtPayload;
 
     if (
-      permission &&
-      !hasPermission(
-        decoded.role,
-        permission
+      allowedRoles.length > 0 &&
+      !allowedRoles.includes(
+        decoded.role
       )
     ) {
-      throw new Error("Forbidden");
+      throw new Error(
+        "Forbidden"
+      );
     }
 
     return decoded;
 
-  } catch (error: any) {
+  } catch {
 
-    if (error.message === "Forbidden") {
-      throw error;
-    }
-
-    throw new Error("Unauthorized");
+    throw new Error(
+      "Unauthorized"
+    );
   }
 }
